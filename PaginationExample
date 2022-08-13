@@ -1,0 +1,81 @@
+import axios from "axios";
+import { useState, useEffect } from "react";
+import ReactPaginate from "react-paginate";
+const FetchUsers = () => {
+  const [users, setUsers] = useState([]);
+  const [search, setSearch] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(search);
+    setSearch("");
+  };
+
+  useEffect(() => {
+    axios
+      .get(`https://jsonplaceholder.typicode.com/comments`)
+      .then((res) => setUsers(res.data))
+      .catch((err) => console.log(err));
+  }, []);
+  const [pageNumber, setPageNumber] = useState(0);
+  const usersPerPage = 5;
+  const pagesVisited = pageNumber * usersPerPage;
+
+  const displayUsers = users
+    .slice(pagesVisited, pagesVisited + usersPerPage)
+    .filter((elem) => {
+      if (elem === "") {
+        return elem;
+      } else if (
+        elem.name.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+      ) {
+        return elem;
+      }
+    })
+    .map((user) => {
+      return (
+        <div>
+          <h4>PostId: {user.postId}</h4>
+          <h4>Id {user.id} </h4>
+          <h4>Name {user.name} </h4>
+          <h4>Email {user.email} </h4>
+          <h4>Body{user.body} </h4>
+          <hr />
+        </div>
+      );
+    });
+
+  const pageCount = Math.ceil(users.length / usersPerPage);
+  const changePage = ({ selected }) => {
+    setPageNumber(selected);
+  };
+
+  return (
+    <>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="search"
+          value={search}
+          placeholder="search with name"
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <button type="submit">submit</button>
+      </form>
+      <hr />
+      {displayUsers}
+      <ReactPaginate
+        previousLabel={"previous"}
+        nextLabel={"next"}
+        pageCount={pageCount}
+        onPageChange={changePage}
+        containerClassName={"paginationBts"}
+        previosLinkClassName={"previousBtn"}
+        nextLinkClassName={"nextBtn"}
+        disabledClassName={"paginationDisabled"}
+        activeClassName={"paginationActive"}
+      />
+    </>
+  );
+};
+export default FetchUsers;
